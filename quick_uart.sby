@@ -1,0 +1,30 @@
+[tasks]
+bmc
+cover
+
+[options]
+bmc:
+mode bmc
+depth 50
+
+cover:
+mode cover
+depth 200
+--
+
+[engines]
+smtbmc
+
+[script]
+cover:
+read -formal cover.vh
+--
+
+read -formal {{files}}
+prep -top formal_top.v
+
+[file cover.vh]
+`define COVER
+
+[files]
+{{files}}

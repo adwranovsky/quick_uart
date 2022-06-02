@@ -1,0 +1,49 @@
+CAPI=2:
+
+name: adwranovsky:hardware:quick_uart:0.1
+
+filesets:
+    rtl:
+        depend:
+            - ">=adwranovsky_blips_timer-0.2"
+            - ">=adwranovsky_blips_shift_register-1.0"
+        files:
+            - rtl/quick_uart_tx.sv
+            - rtl/quick_uart_rx.sv
+        file_type: systemVerilogSource
+    formal:
+        files:
+            - quick_uart.sby
+        file_type: sbyConfigTemplate
+
+targets:
+    default:
+        filesets: [rtl]
+    lint:
+        default_tool: verilator
+        filesets: [rtl]
+        toplevel: quick_uart_tx
+        tools:
+            verilator:
+                mode: "lint-only"
+    bmc_tx:
+        default_tool: symbiyosys
+        filesets: [rtl, formal]
+        toplevel: quick_spi
+        tools:
+            symbiyosys:
+                tasknames: [bmc]
+    prove_tx:
+        default_tool: symbiyosys
+        filesets: [rtl, formal]
+        toplevel: quick_spi
+        tools:
+            symbiyosys:
+                tasknames: [prove]
+    cover_tx:
+        default_tool: symbiyosys
+        filesets: [rtl, formal]
+        toplevel: quick_spi
+        tools:
+            symbiyosys:
+                tasknames: [cover]
