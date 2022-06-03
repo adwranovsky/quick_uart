@@ -1,12 +1,12 @@
 `default_nettype none
 module quick_uart_tx #(
-    parameter integer CLK_FREQ = 100000000,
-    parameter integer BAUD = 115200,
-    parameter integer DIV = CLK_FREQ / BAUD,
-    parameter logic   IDLE_VALUE = 1'b1,
-    parameter integer DATA_BITS = 8,
-    parameter integer STOP_BITS = 1,
-    parameter integer START_BITS = 1
+    parameter int   CLK_FREQ = 100000000,
+    parameter int   BAUD = 115200,
+    parameter int   DIV = CLK_FREQ / BAUD,
+    parameter logic IDLE_VALUE = 1'b1,
+    parameter int   DATA_BITS = 8,
+    parameter int   STOP_BITS = 1,
+    parameter int   START_BITS = 1
 ) (
     input  logic clk_i,
     input  logic rst_i,
@@ -31,10 +31,10 @@ module quick_uart_tx #(
             {{STOP_BITS{IDLE_VALUE}}, data_i, {START_BITS{~IDLE_VALUE}}}
         ),
         .advance_i(shift_data),
-        .bit_o(tx_o),
+        .bit_o(tx_o)
     );
 
-    // A timer to set the bit period
+    // A timer to count out the bit period
     logic start_timer, timer_done;
     timer #(
         .WIDTH($clog2(DIV))
@@ -42,29 +42,31 @@ module quick_uart_tx #(
         .clk_i(clk_i),
         .rst_i(rst_i),
         .start_i(start_timer),
-        .count_i(DIV),
+        .count_i(DIV[$clog2(DIV)-1:0]),
         .done_o(timer_done)
     );
 
     // Count bits sent
     logic reset_bit_counter, increment_bit_counter;
-    logic [$clog2(TOTAL_BITS):0] bit_counter = TOTAL_BITS;
+    logic [$clog2(TOTAL_BITS):0] bit_counter = TOTAL_BITS[$bits(bit_counter)-1:0];
     always_ff @(posedge clk_i) begin
         if (rst_i || reset_bit_counter)
-            bit_counter <= TOTAL_BITS;
+            bit_counter <= TOTAL_BITS[$bits(bit_counter)-1:0];
+        else if (increment_bit_counter)
+            bit_counter <= bit_counter - 1;
         else
-            bit_counter <= bit_counter - increment_bit_counter;
+            bit_counter <= bit_counter;
     end
     logic bit_counter_done = bit_counter == 0;
 
 
     // State register
     typedef enum {
-        RESET = 2'h0,
-        READY = 2'h1,
-        TRANSMITTING = 2'h2
+        RESET = 0,
+        READY = 1,
+        TRANSMITTING = 2
     } uart_tx_state_t;
-    state_t state, next_state;
+    uart_tx_state_t state, next_state;
 
     initial state = RESET;
     always_ff @(posedge clk_i)
