@@ -78,9 +78,11 @@ module formal_top;
         if (outstanding_handshakes > 2 && rx_handshake)
             assert(rx_dropped);
 
-    // Make testbench
-    always_ff @(posedge clk)
+    // Make testbenches
+    always_ff @(posedge clk) begin
         cover(rx_handshake && rx_dropped==0 && rx_data==8'ha5);
+        cover(rx_handshake && rx_dropped==1);
+    end
 
 
 endmodule
