@@ -1,12 +1,7 @@
 [tasks]
-bmc
 cover
 
 [options]
-bmc:
-mode bmc
-depth 50
-
 cover:
 mode cover
 depth 200
@@ -16,15 +11,8 @@ depth 200
 smtbmc
 
 [script]
-cover:
-read -formal cover.vh
---
-
-read -formal {{files}}
-prep -top formal_top.v
-
-[file cover.vh]
-`define COVER
+{{"-sv"|gen_reads}}
+prep -top formal_top
 
 [files]
 {{files}}
